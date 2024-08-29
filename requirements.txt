@@ -1,0 +1,6 @@
+Flask>=2.2.2
+gunicorn==19.9.0
+celery==5.0.2
+openai==1.33.0
+requests
+redis

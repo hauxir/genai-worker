@@ -11,6 +11,7 @@ import worker
 app = Flask(__name__)
 
 SECRET = os.getenv("SECRET")
+IMGPUSH_HOST = os.getenv("IMGPUSH_HOST")
 
 
 def remove_old_files(directory, age_limit):
@@ -40,6 +41,23 @@ def process_prompt(prompt, format, temperature, force_new_result):
         return dict(state="started")
 
 
+def process_image_prompt(prompt, size, quality, background, force_new_result):
+    hash = common.hash_parameters_md5(prompt, size, quality, background)
+    file_path = f"/tmp/{hash}.txt"
+    if os.path.exists(file_path) and not force_new_result:
+        with open(file_path, "r") as file:
+            content = file.read()
+            if content:
+                return dict(state="ready", result=json.loads(content))
+            else:
+                return dict(state="pending")
+    else:
+        with open(file_path, "w") as file:
+            pass
+        worker.process_image_prompt.delay(prompt, size, quality, background)
+        return dict(state="started")
+
+
 @app.route("/api/json", methods=["POST"])
 def gpt_json():
     auth_header = request.headers.get("Authorization")
@@ -51,6 +69,25 @@ def gpt_json():
     force_new_result = request.json.get("force_new_result", False)
 
     results = process_prompt(prompt, format, temperature, force_new_result)
+
+    if results["state"] == "started":
+        remove_old_files("/tmp", 3600)
+
+    return jsonify(results)
+
+
+@app.route("/api/image", methods=["POST"])
+def gpt_json():
+    auth_header = request.headers.get("Authorization")
+    if SECRET and (not auth_header or auth_header.split()[-1] != SECRET):
+        return Response("Unauthorized", 401)
+    prompt = request.json.get("prompt")
+    size = request.json.get("size", "1024x1024")
+    quality = request.json.get("quality", "high")
+    background = request.json.get("background", None)
+    force_new_result = request.json.get("force_new_result", False)
+
+    results = process_image_prompt(prompt, size, quality, background, force_new_result)
 
     if results["state"] == "started":
         remove_old_files("/tmp", 3600)

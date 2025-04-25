@@ -22,4 +22,17 @@ def process_prompt(self, prompt, format, temperature):
     return result
 
 
+@app.task(bind=True)
+def process_image_prompt(self, prompt, size, quality, background=None):
+    hash = common.hash_parameters_md5(prompt, size, quality, background)
+    file_path = f"/tmp/{hash}.txt"
+
+    result = openai_wrapper.generate_image(prompt, size, quality, background)
+
+    with open(file_path, "w") as file:
+        file.write(json.dumps(result))
+
+    return result
+
+
 __all__ = ["app"]

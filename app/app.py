@@ -77,7 +77,7 @@ def gpt_json():
 
 
 @app.route("/api/image", methods=["POST"])
-def gpt_json():
+def gpt_image():
     auth_header = request.headers.get("Authorization")
     if SECRET and (not auth_header or auth_header.split()[-1] != SECRET):
         return Response("Unauthorized", 401)

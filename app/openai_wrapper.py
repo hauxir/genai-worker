@@ -1,5 +1,6 @@
 import os
 import json
+import base64
 
 import requests
 from openai import OpenAI
@@ -45,4 +46,4 @@ def generate_image(prompt, size="1024x1024", quality="high", background=None):
     image_base64 = result.json()["data"][0]["b64_json"]
     image_bytes = base64.b64decode(image_base64)
     imgpush_response = requests.post(imgpush_host, files={"file": ("image.png", image_bytes)}).json()
-    return dict(url=f"{imgpush_host}/{imgpush_response["filename"]})
+    return dict(url=f"{imgpush_host}/{imgpush_response['filename']"})

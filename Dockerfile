@@ -1,7 +1,7 @@
 FROM python:3.11-slim
 
 RUN apt-get update
-RUN apt-get install -y redis nginx
+RUN apt-get install -y redis nginx libmagickwand-dev
 
 COPY requirements.txt .
 COPY nginx.conf /etc/nginx/conf.d/default.conf

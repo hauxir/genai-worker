@@ -49,6 +49,11 @@ def generate_json(prompt, obj, temperature=1.0, max_tokens=4096, model=None):
     model = model or "gpt-5-nano"
     service_provider = _get_service_provider(model)
 
+    # GPT-5 reasoning models (gpt-5-nano, gpt-5-mini, gpt-5) don't support temperature
+    model_lower = model.lower()
+    if "gpt-5" in model_lower and "chat" not in model_lower:
+        temperature = 1.0
+
     obj_str = json.dumps(obj)
 
     combined_prompt = (

@@ -13,11 +13,11 @@ imgpush_host = os.getenv("IMGPUSH_HOST")
 client = OpenAI(api_key=api_key)
 
 
-def generate_json(prompt, obj, temperature=1.1, max_tokens=4096):
+def generate_json(prompt, obj, temperature=1.1, max_tokens=4096, model=None):
     obj_str = json.dumps(obj)
 
     response = client.chat.completions.create(
-        model="gpt-4o",
+        model=model or "gpt-5-nano",
         response_format={"type": "json_object"},
         messages=[
             {

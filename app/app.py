@@ -24,8 +24,8 @@ def remove_old_files(directory, age_limit):
                 os.remove(file_path)
 
 
-def process_prompt(prompt, format, temperature, force_new_result):
-    hash = common.hash_parameters_md5(prompt, format, temperature)
+def process_prompt(prompt, format, temperature, force_new_result, provider="openai", model=None):
+    hash = common.hash_parameters_md5(prompt, format, temperature, provider, model)
     file_path = f"/tmp/{hash}.txt"
     if os.path.exists(file_path) and not force_new_result:
         with open(file_path, "r") as file:
@@ -37,7 +37,7 @@ def process_prompt(prompt, format, temperature, force_new_result):
     else:
         with open(file_path, "w") as file:
             pass
-        worker.process_prompt.delay(prompt, format, temperature)
+        worker.process_prompt.delay(prompt, format, temperature, provider, model)
         return dict(state="started")
 
 
@@ -67,8 +67,10 @@ def gpt_json():
     format = json.loads(json.dumps(request.json.get("format", dict())))
     temperature = request.json.get("temperature", 1.1)
     force_new_result = request.json.get("force_new_result", False)
+    provider = request.json.get("provider", "openai")
+    model = request.json.get("model")
 
-    results = process_prompt(prompt, format, temperature, force_new_result)
+    results = process_prompt(prompt, format, temperature, force_new_result, provider, model)
 
     if results["state"] == "started":
         remove_old_files("/tmp", 3600)

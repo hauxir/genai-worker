@@ -13,7 +13,7 @@ imgpush_host = os.getenv("IMGPUSH_HOST")
 client = OpenAI(api_key=api_key)
 
 
-def generate_json(prompt, obj, temperature=1.1, max_tokens=4096, model=None):
+def generate_json(prompt, obj, temperature=1.1, max_completion_tokens=4096, model=None):
     obj_str = json.dumps(obj)
 
     response = client.chat.completions.create(
@@ -30,7 +30,7 @@ def generate_json(prompt, obj, temperature=1.1, max_tokens=4096, model=None):
             },
             {"role": "user", "content": prompt},
         ],
-        max_tokens=max_tokens,
+        max_completion_tokens=max_completion_tokens,
         temperature=temperature,
     )
 

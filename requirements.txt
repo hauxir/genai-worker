@@ -4,3 +4,4 @@ celery==5.0.2
 openai==1.76.0
 requests
 redis
+Pillow

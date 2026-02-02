@@ -1,3 +1,6 @@
+import io
+from PIL import Image, ImageChops
+
 import hashlib
 
 
@@ -15,3 +18,24 @@ def hash_parameters_md5(*args):
     hash_hex = md5_hash.hexdigest()
 
     return hash_hex
+
+
+def crop_transparent_image(image_bytes, fuzz=20):
+    with Image.open(io.BytesIO(image_bytes)) as img:
+        img = img.convert("RGBA")
+        bbox = img.getbbox()
+        bg_color = img.getpixel((0, 0))
+        bg = Image.new(img.mode, img.size, bg_color)
+        diff = ImageChops.difference(img, bg)
+
+        if fuzz > 0:
+            diff = diff.point(lambda p: p > fuzz and 255)
+
+        bbox = diff.getbbox()
+        if bbox:
+            img = img.crop(bbox)
+
+        output_buffer = io.BytesIO()
+        img.save(output_buffer, format="PNG")
+        output_buffer.seek(0)
+        return output_buffer.read()
